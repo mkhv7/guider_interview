@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  # Django контейнер
+  django:
+    build: .
+    container_name: django-app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/dbname
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  # Frontend контейнер
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - django
+    command: run 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://django:8000/health/"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  # PostgreSQL контейнер
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+# Персистентность данных PostgreSQL
+volumes:
+  postgres-data:
