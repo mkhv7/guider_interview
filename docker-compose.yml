@@ -1,0 +1,21 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: exampleuser
+      POSTGRES_PASSWORD: examplepass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Добавляем том для хранения данных
+
+volumes:
+  postgres_data:  # Определяем том
+
+
+
+
+#  для фоногого запуска контейнеров docker-compose up -d
